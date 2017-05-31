@@ -38,6 +38,11 @@ gulp.task("js",function(){
         .pipe(reload({
             stream:true
         }));//自动重新刷新页面
+    gulp.src("src/plugins/*.js")   //找到文件下的所有js文件
+        .pipe(gulp.dest("dist/plugins"))  //将转化成js文件放在dist/scripts中
+        .pipe(reload({
+            stream:true
+        }));//自动重新刷新页面
 });
 
 
@@ -88,6 +93,7 @@ gulp.task('serve', function() {
     gulp.watch("src/images/*.*",["image"]);
     gulp.watch("devDependencies/js/*.map",["js"]);
     gulp.watch("devDependencies/js/*.js",["js"]);
+    gulp.watch("src/plugins/*.js",["js"]);
     gulp.watch(["src/css/*.less","src/css/*.css","!src/css/_*.less"],["css"]);
 });
 
