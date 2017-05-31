@@ -1,0 +1,274 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+<!--  <meta http-equiv="X-UA-Compatible" content="chrome=1">-->
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+  <style type="text/css">
+    body,html,#container{
+      height: 100%;
+      margin: 0;
+    }
+    #panel {
+        position: fixed;
+        background-color: white;
+        max-height: 30%;
+        overflow-y: auto;
+        top: 0px;
+        right: 0px;
+        width: 280px;
+        border-bottom: solid 1px silver;
+    }
+      #btn{
+          position: absolute;
+          top: 0;
+          left: 0;
+      }
+
+  </style>
+  <title>快速入门</title>
+</head>
+<body>
+<div id="container" tabindex="0"></div>
+<div id="panel"></div>
+<button id="btn">请点击我</button>
+<script src="js/zepto.min.js"></script>
+<script src="js/main.js"></script>
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.3&key=2f7e64bf776e653ef4d05268f3171047"></script>
+<!--<script src="http://webapi.amap.com/maps?v=1.3&amp;key=2f7e64bf776e653ef4d05268f3171047&callback=init"></script> 异步加载-->
+<script>
+  /*====================地图加载============================*/
+  var map = new AMap.Map('container', {   //同步加载
+    resizeEnable: true,
+    zoom:16,
+    center: [104.065669,30.657485]
+    ,mapStyle: 'amap://styles/light' //'amap://styles/地图样式ID' 地图样式ID和开发者Key必须同属于一个开发者账号，样式的发布生效需要1分钟时间。
+    ,scrollWheel:true    //鼠标滚轮是否可以控制
+  });
+  /*====================地图显示标记============================*/
+/*  var marker = new AMap.Marker({
+    position: [104.065669,30.657485]//marker所在的位置
+    ,map:map//创建时直接赋予map属性
+  });*/
+  var circle = new AMap.Circle({   //半径覆盖物
+    center: [104.065669,30.657485],
+    radius: 100,
+    fillOpacity:0.2,
+    strokeWeight:1
+    //,map:map
+  });
+  var info = new AMap.InfoWindow({   //信息显示
+    content:"<p style='color: red'>信息窗体这里是方恒科技大厦</p><p>2323</p>"
+  });
+
+  var str='';
+  str+="<p style='text-align: center;'><img src='img/aideua.jpg' style='width: 100px; '></p>";
+  str+="<p style='color: red;text-align: center;'>hello</p>";
+  str+="<p style='text-align: center;'>world</p>";
+  function openInfo(marker,info) {
+    //map.clearMap();  //先清除所有的障碍物，在添加
+    //构建信息窗体中显示的内容
+/*    var infoWindow = new AMap.InfoWindow({   //一般信息框
+        content: info,  //使用默认信息窗体框样式，显示信息内容
+        panel: 'panel',
+        placeSearch: true,
+        asOrigin: true,
+        asDestination: true
+      });*/
+    map.plugin('AMap.AdvancedInfoWindow', function () {   //包含地址所搜的高级信息栏
+      var infoWindow = new AMap.AdvancedInfoWindow({ //高级信息框
+        content: info,  //使用默认信息窗体框样式，显示信息内容
+        panel: 'panel',   //结果列表的HTML容器id或容器元素
+        placeSearch: true,   //是否支持显示周边搜索
+        asOrigin: true,    //是否支持作为路径规划的起点
+        asDestination: true  //是否支持作为路径规划的终点
+      });
+      infoWindow.open(map,marker.getPosition()); //以marker为挤出点
+
+    });
+  }
+  //openInfo(marker,str);   //打开信息层
+
+  //info.open(map,marker.getPosition()); //以marker为挤出点
+  //info.open(map,[104.085669,30.657485]); //也可以用经纬度来
+
+  /*====================地图显示的内容============================*/
+  //map.setFeatures(["road","building"]);//地图显示的内容，默认是全部显示  bg-地图背景   point-兴趣点  road-道路 building-建筑物
+
+  /*========================部分插件========================*/
+  AMap.plugin(['AMap.ToolBar','AMap.Scale','AMap.OverView'],
+  function(){
+        map.addControl(new AMap.ToolBar());   //右下角的+-号用于控制层级
+
+        //map.addControl(new AMap.Scale());  //比例尺,显示当前层级和纬度下的比例尺
+
+        //map.addControl(new AMap.OverView({isOpen:true}));  //右下角显示地图的缩略图
+
+  });
+
+  /*========================地图导航功能========================*/
+/*  AMap.plugin('AMap.Driving',function(){
+    var drving = new AMap.Driving({
+      map:map
+    });
+    drving.search([
+      {keyword:'天府广场',city:'成都'},
+      {keyword:'高新',city:'成都'}
+    ]);
+  })*/
+
+
+
+/*
+
+  /!*=========================地图搜索功能+显示多个标记====================================*!/
+  AMap.service('AMap.PlaceSearch',function(){//回调函数
+    //实例化PlaceSearch
+    var placeSearch = new AMap.PlaceSearch({ //构造地点查询类
+      pageSize: 9,
+      pageIndex: 1,
+      city: "028", //城市
+      map: map,
+      panel: "result"
+    });
+    //关键字查询
+    placeSearch.search('高新', function(status, result) {
+      var data=result.poiList.pois;
+      console.log(data);
+      for(var i=0;i<data.length;i++){
+        var str='';
+        str+='<div style="width: 19px; height: 33px;position: relative;">';
+        str+='<img src="https://webapi.amap.com/theme/v1.3/markers/b/mark_bs.png" style="width: 19px; height: 33px; top: 0px; left: 0px;">';
+        str+='<span style="position: absolute; top:0;left: 4px">'+(i+1)+'</span>';
+        str+='</div>';
+        new AMap.Marker({
+          position: [data[i].location.J,data[i].location.N]//marker所在的位置
+          ,content:str
+          ,map:map//创建时直接赋予map属性
+        });
+      }
+    });
+  });
+
+
+  */
+
+
+/*  /!*========================地图定位功能========================*!/
+
+  var  geolocation;
+  //加载地图，调用浏览器定位服务
+  map.plugin('AMap.Geolocation', function() {
+      geolocation = new AMap.Geolocation({
+          enableHighAccuracy: true,//是否使用高精度定位，默认:true
+          //timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+          //buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+          zoomToAccuracy: true      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+          ,buttonPosition:'LB'
+          ,showCircle:false        //定位成功后用圆圈表示定位精度范围，默认：true
+          ,showMarker:false        //定位成功后用圆圈表示定位精度范围，默认：true
+
+      });
+      console.log(geolocation.isSupported());   //判断 是否支持定位功能
+      map.addControl(geolocation);
+     geolocation.getCurrentPosition();
+      AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+      AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+  });
+  //解析定位结果
+  function onComplete(data) {
+      console.log(data);
+        var marker = new AMap.Marker({
+           position: [data.position.J,data.position.N]//marker所在的位置
+           ,map:map//创建时直接赋予map属性
+       });
+  }
+  //解析定位错误信息
+  function onError(data) {
+      //document.getElementById('tip').innerHTML = '定位失败';
+      alert("失败了")
+  }*/
+
+
+/*
+
+    /!*=========================附近搜索===========================*!/
+  AMap.service(["AMap.PlaceSearch"], function() {
+      var placeSearch = new AMap.PlaceSearch({ //构造地点查询类
+          pageSize: 6,
+          pageIndex: 1,
+          map: map,
+          panel: "panel"   //搜索后的列表显示DOM
+      });
+      placeSearch.searchNearBy('地铁', [104.085669, 30.657485], 2000, function (status, result) {   //关键词  中心坐标    半径    回调函数
+            console.log(result);
+      });
+  });
+*/
+
+
+/*=========================路径规划==========================*/
+/*  AMap.service('AMap.Transfer',function(){//公交
+      transfer= new AMap.Transfer({city: '成都市'});
+  });
+  AMap.service('AMap.Walking',function(){//走路
+      walking= new AMap.Walking({city: '成都市'});
+  });
+  AMap.service('AMap.Driving',function(){//开车
+      driving= new AMap.Driving({city: '成都市'});
+  });
+  var trans;
+  transOptions = {
+      map: map,
+      panel: "panel",
+      city: '成都市',                            //公交城市
+      policy: AMap.TransferPolicy.LEAST_TIME //乘车策略
+  };*/
+  //构造公交换乘类
+  //trans = new AMap.Transfer(transOptions);
+  //trans = new AMap.Walking(transOptions);
+  //trans = new AMap.Driving(transOptions);
+  //根据起、终点坐标查询公交换乘路线
+  //trans.search([116.379028, 39.865042], [116.427281, 39.903719]);
+  //让专业的来  直接进入高德地图的网站即可，站在巨人身上看世界
+    var star="104.065669,30.657485";   //起始精度
+    var end="116.427281,39.903719";   //结束精度
+    var url1="http://m.amap.com/navigation/carmap/saddr="+star+",%E8%B5%B7%E7%82%B9&daddr="+end+",%E7%BB%88%E7%82%B9";   //路径规划
+
+    $("#btn").click(function(){
+        window.location.href=url1;
+    });
+
+
+    //高德地图的部分url
+    //http://m.amap.com/search/mapview/keywords=关键词&city=区号      搜索关键词
+
+    //http://m.amap.com/searchmore/index/user_loc=文家场,103.930779,30.695868      周边搜索        精度+纬度
+
+     //http://m.amap.com/navigation/ridemap/saddr=104.065751%2C30.657453,起点名&daddr=104.063832%2C30.594370,终点名  //路径规划
+    //walkmap,ridemap,buslist,carmap    走路   骑车  公交车   驾车       saddr-起点    daddr-终点
+
+
+
+
+
+
+</script>
+<!--<script type="text/javascript">
+  //tabindex是使用与tab后a标签聚焦的顺序，从0开始    Safari不兼容
+  function init(){    //异步加载
+    var map = new AMap.Map('container', {
+      center: [104.065669,30.657485],
+      zoom: 16
+    });
+    map.plugin(["AMap.ToolBar"], function() {
+      map.addControl(new AMap.ToolBar());
+    });
+    AMap.Marker({    //用于标记点
+      position: [104.065669,30.657485]//marker所在的位置
+      ,map:map//创建时直接赋予map属性
+    });
+  }
+
+</script>-->
+</body>
+</html>
